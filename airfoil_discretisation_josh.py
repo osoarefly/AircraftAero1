@@ -1,14 +1,9 @@
 import numpy as np
 import math as m
 import matplotlib.pyplot as plt
-# from LOAD_AIRFOIL_SELIG import LOAD_AIRFOIL_SELIG
+
 
 # %% CREATE/LOAD GEOMETRY
-
-# Load airfoil
-load = 'Circle'           # Use the airfoil geometry
-AoA = 0  # Angle of attack [deg]
-
 if (load == 'Airfoil'):  # If airfoil is to be loaded
     fileName = 'goe623'  # Specify the airfoil filename
     XB, YB = LOAD_AIRFOIL_SELIG(fileName)  # Load X and Y data points of airfoil
@@ -16,14 +11,14 @@ elif (load == 'Circle'):  # If circle is to be used
     numB = 9  # Number of boundary points
     tO = 22.5  # Angle offset [deg]
 
-    # Angles used to compute boundary points
-    theta = np.linspace(0, 360, numB)  # Angles to compute boundary points [deg]
-    theta = theta + tO  # Add angle offset [deg]
-    theta = theta * (np.pi / 180)  # Convert angle to radians [rad]
+# Angles used to compute boundary points
+theta = np.linspace(0, 360, numB)  # Angles to compute boundary points [deg]
+theta = theta + tO  # Add angle offset [deg]
+theta = theta * (np.pi / 180)  # Convert angle to radians [rad]
 
-    # Boundary points
-    XB = np.cos(theta)  # X value of boundary points
-    YB = np.sin(theta)  # Y value of boundary points
+# Boundary points
+XB = np.cos(theta)  # X value of boundary points
+YB = np.sin(theta)  # Y value of boundary points
 
 # Number of panels
 numPan = len(XB) - 1  # Number of panels
