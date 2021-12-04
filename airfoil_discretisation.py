@@ -13,7 +13,7 @@ def load_airfoil(filename): #filename is airfoil number as STRING
 def discretization(x,y,AoA):
 
     # Number of panels
-    numPan = len(x) - 1  # Number of panels
+    numPan = len(x) - 1   # Number of panels
 
     # Check for direction of points
     edge = np.zeros(numPan)  # Initialize edge check value
