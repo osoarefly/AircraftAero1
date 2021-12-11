@@ -9,6 +9,49 @@ def load_airfoil(filename): #filename is airfoil number as STRING
     y = data[:,1]
     return x, y
 
+def gen_airfoil(airfoilname, npoints):
+    b = np.linspace(0,np.pi,npoints)
+    x = 0.5*(1-np.cos(b))
+    t = float(airfoilname[-2:])/100
+    m = float(airfoilname[0])/100
+    p = float(airfoilname[1])/10
+    print(m,p,t)
+
+
+
+
+    yt = 5 * t * (0.2969 * np.sqrt(x) - 0.126 * x - 0.3516 * x ** 2 + 0.2843 * x ** 3 - 0.1036 * x ** 4)
+
+    if m==0.:
+        yu = yt
+        yl = -1*np.flip(yt)
+        xu = x
+        xl = np.flip(x)
+        xf = np.append(xl,xu)
+        yf = np.append(yl,yu)
+    else:
+        x1 = x[x <= p]
+        x2 = x[x > p]
+        yc1 = m / p ** 2 * (2 * p * x1 - x ** 2)
+        yc2 = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x ** 2)
+        yc = np.append(yc1, yc2)
+        dydx1 = 2*m/p**2 * (p-x1)
+        dydx2 = 2*n/(1-p)**2 * (p-x2)
+        dydx = np.append(dydx1,dydx2)
+        theta = np.atan(dydx)
+
+        xu = x - yt*np.sin(theta)
+        yu = yc + yt*np.cos(theta)
+        xl = x + yt*np.sin(theta)
+        yl = yc - yt*np.cos(theta)
+
+        xl = np.flip(xl)
+        yl = np.flip(yl)
+
+        xf = np.append(xl,xu)
+        yf = np.append(yl,yu)
+
+    return xf, yf
 
 def discretization(x,y,AoA):
 
@@ -80,3 +123,7 @@ def discretization(x,y,AoA):
     plt.show()  # Display plot
 
     return phi
+
+x,y = gen_airfoil('0008',100)
+# plt.plot(gen_airfoil('0008',100))
+# plt.show()
