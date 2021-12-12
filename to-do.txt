@@ -1,0 +1,10 @@
+- Airfoil generator - DONE
+- Airfoil geometry analysis function - DONE
+- Assembly of N matrix -
+- Assembly of RHS vector for solver -
+- Assembly of T matrix - FIND EQUATIONS FOR TANGENTIAL COMPONENT
+- Cp calculator -
+- Cp plotter -
+- Cp integration & lift calculation -
+- Flow field visualiser -
+- Streamline plotter -

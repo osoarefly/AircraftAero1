@@ -122,7 +122,7 @@ def discretization(x,y,AoA):
     plt.legend()  # Plot legend
     plt.show()  # Display plot
 
-    return phi
+    return numPan, x, y, phi, S, x_control, y_control
 
 x,y = gen_airfoil('0008',100)
 # plt.plot(gen_airfoil('0008',100))
