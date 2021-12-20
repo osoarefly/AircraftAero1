@@ -17,9 +17,6 @@ def gen_airfoil(airfoilname, npoints):
     p = float(airfoilname[1])/10
     print(m,p,t)
 
-
-
-
     yt = 5 * t * (0.2969 * np.sqrt(x) - 0.126 * x - 0.3516 * x ** 2 + 0.2843 * x ** 3 - 0.1036 * x ** 4)
 
     if m==0.:
@@ -53,27 +50,14 @@ def gen_airfoil(airfoilname, npoints):
 
     return xf, yf
 
-def discretization(x,y,AoA):
 
-    # Number of panels
-    numPan = len(x) - 1   # Number of panels
+
+def discretization(x,y,AoA, numPan):
 
     # Check for direction of points
     edge = np.zeros(numPan)  # Initialize edge check value
     for i in range(numPan):  # Loop over all panels
         edge[i] = (x[i + 1] - x[i]) * (y[i + 1] - y[i])  # Compute edge value for each panel
-
-    sumEdge = np.sum(edge)  # Sum all panel edge values
-
-    # If panels are CCW, flip them (don't if CW)
-    if (sumEdge < 0):  # If sum is negative
-        print('Points are counter-clockwise.  Flipping.\n')  # Display message in console
-        x = np.flipud(x)  # Flip the X boundary points array
-        y = np.flipud(y)  # Flip the Y boundary points array
-    elif (sumEdge > 0):  # If sum is positive
-        print('Points are clockwise.  Not flipping.\n')  # Do nothing, display message in consolve
-
-    # %% COMPUTE GEOMETRIC VARIABLES
 
     # Initialize variables
     x_control = np.zeros(numPan)  # Initialize X control points
@@ -124,7 +108,7 @@ def discretization(x,y,AoA):
 
     return numPan, x, y, phi, S, x_control, y_control
 
-# x,y = gen_airfoil('2412',100)
+# x,y = gen_airfoil('4412',100)
 # plt.plot(x,y)
 # plt.axis('equal')
 # plt.show()
