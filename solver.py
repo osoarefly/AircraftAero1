@@ -13,24 +13,57 @@ def matrix_building(numPan, X_panel, Y_panel, theta, S, x_control, y_control):
 
         for j in range(numPan):
 
-            A = - (x_control[i] - X_panel[j]) * np.cos(theta[i]) - (y_control[i] - Y_panel[j]) * np.sin(theta[j])
-            B = (x_control[i] - X_panel[j])**2 - (y_control[i] - Y_panel[j])**2
+            A = - (x_control[i] - X_panel[j]) * np.cos(theta[j]) - (y_control[i] - Y_panel[j]) * np.sin(theta[j])
+            B = (x_control[i] - X_panel[j])**2 + (y_control[i] - Y_panel[j])**2
             C = np.sin(theta[i] - theta[j])
             D = np.cos(theta[i] - theta[j])
             E = (x_control[i] - X_panel[j]) * np.sin(theta[j]) - (y_control[i] - Y_panel[j]) * np.cos(theta[j])
-            F = np.log(1 + (S[j]**2 * A * S[j])/B )
+            F = np.log(1 + (S[j]**2 + 2 * A * S[j])/B)
             G = np.arctan((E * S[j])/(B + A * S[j]))
             P = (x_control[i] - X_panel[j]) * np.sin(theta[i] - 2*theta[j]) + (y_control[i] - Y_panel[j]) * np.cos(theta[i] - 2*theta[j])
             Q = (x_control[i] - X_panel[j]) * np.cos(theta[i] - 2*theta[j]) + (y_control[i] - Y_panel[j]) * np.cos(theta[i] - 2*theta[j])
 
             Cn2 = D + 0.5*Q*F/S[j] - (A*C + D*E)*G/S[j]
             Cn1 = 0.5*D*F + C*G - Cn2
+
+            Ct2 = D + 0.5*P*F/S[j] - (A*C + D*E)*G/S[j]
+            Ct1 = 0.5*D*F + C*G - Ct2
             if j==numPan-1:
                 N[i,j] = N[i,j] + Cn1
                 N[i,0] = N[i,0] + Cn2
+
+                T[i, j] = T[i, j] + Ct1
+                T[i, 0] = T[i, 0] + Ct2
             else:
                 N[i,j] = N[i,j] + Cn1
                 N[i,j+1] = N[i,j+1] + Cn2
+
+                T[i, j] = T[i, j] + Ct1
+                T[i, j + 1] = T[i, j + 1] + Ct2
+    i = numPan-1
+    for j in range(numPan):
+        A = - (x_control[i] - X_panel[j]) * np.cos(theta[j]) - (y_control[i] - Y_panel[j]) * np.sin(theta[j])
+        B = (x_control[i] - X_panel[j]) ** 2 + (y_control[i] - Y_panel[j]) ** 2
+        C = np.sin(theta[i] - theta[j])
+        D = np.cos(theta[i] - theta[j])
+        E = (x_control[i] - X_panel[j]) * np.sin(theta[j]) - (y_control[i] - Y_panel[j]) * np.cos(theta[j])
+        F = np.log(1 + (S[j] ** 2 + 2 * A * S[j]) / B)
+        G = np.arctan((E * S[j]) / (B + A * S[j]))
+        P = (x_control[i] - X_panel[j]) * np.sin(theta[i] - 2 * theta[j]) + (y_control[i] - Y_panel[j]) * np.cos(
+            theta[i] - 2 * theta[j])
+        Q = (x_control[i] - X_panel[j]) * np.cos(theta[i] - 2 * theta[j]) + (y_control[i] - Y_panel[j]) * np.cos(
+            theta[i] - 2 * theta[j])
+
+        Ct2 = D + 0.5 * P * F / S[j] - (A * C + D * E) * G / S[j]
+        Ct1 = 0.5 * D * F + C * G - Ct2
+
+        if j == numPan - 1:
+
+            T[i, j] = T[i, j] + Ct1
+            T[i, 0] = T[i, 0] + Ct2
+        else:
+            T[i, j] = T[i, j] + Ct1
+            T[i, j + 1] = T[i, j + 1] + Ct2
 
 
 
@@ -41,7 +74,8 @@ def matrix_building(numPan, X_panel, Y_panel, theta, S, x_control, y_control):
 
 def rhs_vec(a, Vinf, theta):
     rhs = Vinf*np.sin(theta-a)
-    np.append(rhs,0.)
+    rhs[-1] = 0.
+    # np.append(rhs,0.)
     return rhs
 
 # if __name__ == "__main__":

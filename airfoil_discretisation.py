@@ -83,9 +83,9 @@ def discretization(x,y,AoA, numPan):
 
     # %% PLOTTING
     # Plot the paneled geometry
-    fig = plt.figure(1)  # Create figure
-    plt.cla()  # Get ready for plotting
-    plt.fill(x, y, 'k')  # Plot polygon (circle or airfoil)
+    # fig = plt.figure(1)  # Create figure
+    # plt.cla()  # Get ready for plotting
+    # plt.fill(x, y, 'k')  # Plot polygon (circle or airfoil)
     X = np.zeros(2)  # Initialize panel X variable
     Y = np.zeros(2)  # Initialize panel Y variable
     for i in range(numPan):  # Loop over all panels
@@ -93,18 +93,18 @@ def discretization(x,y,AoA, numPan):
         X[1] = x_control[i] + S[i] * np.cos(delta[i])  # Panel ending X point
         Y[0] = y_control[i]  # Panel starting Y point
         Y[1] = y_control[i] + S[i] * np.sin(delta[i])  # Panel ending Y point
-        if (i == 0):  # For first panel
-            plt.plot(X, Y, 'b-', label='First Panel')  # Plot the first panel normal vector
-        elif (i == 1):  # For second panel
-            plt.plot(X, Y, 'g-', label='Second Panel')  # Plot the second panel normal vector
-        else:  # For every other panel
-            plt.plot(X, Y, 'r-')  # Plot the panel normal vector
-    plt.xlabel('X-Axis')  # Set X-label
-    plt.ylabel('Y-Axis')  # Set Y-label
-    plt.title('Panel Geometry')  # Set title
-    plt.axis('equal')  # Set axes equal
-    plt.legend()  # Plot legend
-    plt.show()  # Display plot
+    #     if (i == 0):  # For first panel
+    #         plt.plot(X, Y, 'b-', label='First Panel')  # Plot the first panel normal vector
+    #     elif (i == 1):  # For second panel
+    #         plt.plot(X, Y, 'g-', label='Second Panel')  # Plot the second panel normal vector
+    #     else:  # For every other panel
+    #         plt.plot(X, Y, 'r-')  # Plot the panel normal vector
+    # plt.xlabel('X-Axis')  # Set X-label
+    # plt.ylabel('Y-Axis')  # Set Y-label
+    # plt.title('Panel Geometry')  # Set title
+    # plt.axis('equal')  # Set axes equal
+    # plt.legend()  # Plot legend
+    # plt.show()  # Display plot
 
     return numPan, x, y, phi, S, x_control, y_control
 
