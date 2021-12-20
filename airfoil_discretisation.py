@@ -32,13 +32,13 @@ def gen_airfoil(airfoilname, npoints):
     else:
         x1 = x[x <= p]
         x2 = x[x > p]
-        yc1 = m / p ** 2 * (2 * p * x1 - x ** 2)
-        yc2 = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x ** 2)
+        yc1 = m / p ** 2 * (2 * p * x1 - x1 ** 2)
+        yc2 = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x2 - x2 ** 2)
         yc = np.append(yc1, yc2)
         dydx1 = 2*m/p**2 * (p-x1)
-        dydx2 = 2*n/(1-p)**2 * (p-x2)
+        dydx2 = 2*m/(1-p)**2 * (p-x2)
         dydx = np.append(dydx1,dydx2)
-        theta = np.atan(dydx)
+        theta = np.arctan(dydx)
 
         xu = x - yt*np.sin(theta)
         yu = yc + yt*np.cos(theta)
@@ -124,6 +124,7 @@ def discretization(x,y,AoA):
 
     return numPan, x, y, phi, S, x_control, y_control
 
-x,y = gen_airfoil('0008',100)
-# plt.plot(gen_airfoil('0008',100))
+# x,y = gen_airfoil('2412',100)
+# plt.plot(x,y)
+# plt.axis('equal')
 # plt.show()
