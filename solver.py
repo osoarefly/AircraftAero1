@@ -10,6 +10,7 @@ def matrix_building(numPan, X_panel, Y_panel, theta, S, x_control, y_control):
 
     # cycle through panels
     for i in range(numPan-1):
+
         for j in range(numPan):
 
             A = - (x_control[i] - X_panel[j]) * np.cos(theta[i]) - (y_control[i] - Y_panel[j]) * np.sin(theta[j])
@@ -24,14 +25,13 @@ def matrix_building(numPan, X_panel, Y_panel, theta, S, x_control, y_control):
 
             Cn2 = D + 0.5*Q*F/S[j] - (A*C + D*E)*G/S[j]
             Cn1 = 0.5*D*F + C*G - Cn2
+            if j==numPan-1:
+                N[i,j] = N[i,j] + Cn1
+                N[i,0] = N[i,0] + Cn2
+            else:
+                N[i,j] = N[i,j] + Cn1
+                N[i,j+1] = N[i,j+1] + Cn2
 
-            N[i,j] = N[i,j] + Cn1
-            N[i,j+1] = N[i,j+1] + Cn2
-
-            Ct1
-            Ct2
-
-            T
 
 
     N[-1,0] = 1 #kutta condition
@@ -43,6 +43,9 @@ def rhs_vec(a, Vinf, theta):
     rhs = Vinf*np.sin(theta-a)
     np.append(rhs,0.)
     return rhs
+
+# if __name__ == "__main__":
+
 
 
 # def induced_velocity(xcontrol, ycontrol, ):

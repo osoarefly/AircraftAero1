@@ -24,8 +24,8 @@ def gen_airfoil(airfoilname, npoints):
         yl = -1*np.flip(yt)
         xu = x
         xl = np.flip(x)
-        xf = np.append(xl,xu)
-        yf = np.append(yl,yu)
+        xf = np.append(xl,xu[1:])
+        yf = np.append(yl,yu[1:])
     else:
         x1 = x[x <= p]
         x2 = x[x > p]
@@ -45,8 +45,8 @@ def gen_airfoil(airfoilname, npoints):
         xl = np.flip(xl)
         yl = np.flip(yl)
 
-        xf = np.append(xl,xu)
-        yf = np.append(yl,yu)
+        xf = np.append(xl,xu[1:])
+        yf = np.append(yl,yu[1:])
 
     return xf, yf
 

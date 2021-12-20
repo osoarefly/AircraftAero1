@@ -1,11 +1,12 @@
 from airfoil_discretisation import *
+import solver as sl
 
-numpan = 100
-x,y = gen_airfoil('2412', numpan)
 
-AoA = 0
+numPan = 100 #must be an even integer
+x,y = gen_airfoil('0008', int(numPan/2))
+numPan, x, y, phi, S, x_control, y_control = discretization(x,y,0, numPan-2)
+mats = sl.matrix_building(numPan, x, y, phi, S, x_control, y_control)
+rhs = sl.rhs_vec(0,1,phi)
 
-theta = discretization(x,y, AoA, 2*numpan-1)
-
-print(theta)
+gamma = np.linalg.solve(mats[0],rhs)
 
