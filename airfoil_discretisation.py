@@ -1,112 +1,132 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import math as m
 
 def load_airfoil(filename): #filename is airfoil number as STRING
     loc = 'airfoils/'+filename+'.dat'
     data = np.genfromtxt(fname=loc,skip_header=1)
     x = data[:,0]
-    y = data[:,1]
-    return x, y
+    z = data[:,1]
+    return x, z #checked
 
-def gen_airfoil(airfoilname, npoints):
-    b = np.linspace(0,np.pi,npoints)
-    x = 0.5*(1-np.cos(b))
-    t = float(airfoilname[-2:])/100
-    m = float(airfoilname[0])/100
-    p = float(airfoilname[1])/10
+def gen_airfoil(airfoilname, numPan):
+    '''
+    Function to generate a NACA 4-digit airfoil with a given number of panels.
+
+    :param airfoilname: Name of airfoil as string.  Must be 4 digits only.
+    :param numPan: Number of panels. First and last panel will have point j and j+1 as the same.
+
+    :return xf: x coordinate of each panel boundary point
+    :return zf: z coordinate of each panel boundary point
+    '''
+
+    #airfoil name must be 4-digits as STRING
+    npoints = numPan/2+1
+
+    #generate cosine distribution of x locations on airfoil chordline (LE and TE clustering)
+    x = 0.5*(1-np.cos(np.linspace(0, np.pi, int(npoints))))
+
+    t = float(airfoilname[-2:])/100 #max thickness
+    m = float(airfoilname[0])/100 #maximum camber
+    p = float(airfoilname[1])/10 #Max camber location
     print(m,p,t)
 
-    yt = 5 * t * (0.2969 * np.sqrt(x) - 0.126 * x - 0.3516 * x ** 2 + 0.2843 * x ** 3 - 0.1036 * x ** 4)
+    zt = 5 * t * (0.2969 * np.sqrt(x) - 0.126 * x - 0.3516 * x ** 2 + 0.2843 * x ** 3 - 0.1036 * x ** 4) #thickness function for NACA 4digit airfoils
 
-    if m==0.:
-        yu = yt
-        yl = -1*np.flip(yt)
+    if m==0.: #if symmetric
+        zu = zt
+        zl = -1*np.flip(zt)
         xu = x
         xl = np.flip(x)
         xf = np.append(xl,xu[1:])
-        yf = np.append(yl,yu[1:])
-    else:
-        x1 = x[x <= p]
-        x2 = x[x > p]
-        yc1 = m / p ** 2 * (2 * p * x1 - x1 ** 2)
-        yc2 = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x2 - x2 ** 2)
-        yc = np.append(yc1, yc2)
-        dydx1 = 2*m/p**2 * (p-x1)
-        dydx2 = 2*m/(1-p)**2 * (p-x2)
-        dydx = np.append(dydx1,dydx2)
-        theta = np.arctan(dydx)
+        zf = np.append(zl,zu[1:])
+    else: #if asymmetric
+        x1 = x[x <= p] #all x values on LE side of max camber location
+        x2 = x[x > p] #all x values on TE side of max camber location
 
-        xu = x - yt*np.sin(theta)
-        yu = yc + yt*np.cos(theta)
-        xl = x + yt*np.sin(theta)
-        yl = yc - yt*np.cos(theta)
+        #from NACA 4-series definition
+        zc1 = m / p ** 2 * (2 * p * x1 - x1 ** 2)
+        zc2 = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x2 - x2 ** 2)
+        zc = np.append(zc1, zc2)
+        dzdx1 = 2*m/p**2 * (p-x1)
+        dzdx2 = 2*m/(1-p)**2 * (p-x2)
+        dzdx = np.append(dzdx1,dzdx2)
+        theta = np.arctan(dzdx)
+
+        xu = x - zt*np.sin(theta)
+        zu = zc + zt*np.cos(theta)
+        xl = x + zt*np.sin(theta)
+        zl = zc - zt*np.cos(theta)
 
         xl = np.flip(xl)
-        yl = np.flip(yl)
+        zl = np.flip(zl)
 
         xf = np.append(xl,xu[1:])
-        yf = np.append(yl,yu[1:])
+        zf = np.append(zl,zu[1:])
 
-    return xf, yf
+    return xf, zf #checked
 
+def discretization(x,z, numPan):
+    '''
+    Function to use airfoil coordinates to calculate positions of control points and panel characteristic values.
 
+    :param x: Panel boundary x coordinate array
+    :param z: Panel boundary z coordinate array
+    :param numPan: Number of panels
 
-def discretization(x,y,AoA, numPan):
+    :return numPan: Number of panels. Unchanged from input value.
+    :return x: Panel boundary x coordinate array. Unchanged from input value.
+    :return z: Panel boundary z coordinate array. Unchanged from input value.
+    :return phi: Panel orientation angle. Defined as the angle measured counter-clockwise from +ve x-axis to the inside
+    of panel.
+    :return S: Panel length.
+    :return x_control: Array of panel control point x coordinate.
+    :return z_control: Array of panel control point z coordinate.
+    '''
 
     # Check for direction of points
     edge = np.zeros(numPan)  # Initialize edge check value
     for i in range(numPan):  # Loop over all panels
-        edge[i] = (x[i + 1] - x[i]) * (y[i + 1] - y[i])  # Compute edge value for each panel
+        edge[i] = (x[i + 1] - x[i]) * (z[i + 1] - z[i])  # Compute edge value for each panel
 
     # Initialize variables
-    x_control = np.zeros(numPan)  # Initialize X control points
-    y_control = np.zeros(numPan)  # Initialize Y control points
+    x_control_up = np.zeros(int(numPan/2))  # Initialize X control points
+    z_control_up = np.zeros(int(numPan/2))  # Initialize Z control points
+    x_control_lo = np.zeros(int(numPan / 2))  # Initialize X control points
+    z_control_lo = np.zeros(int(numPan / 2))
     S = np.zeros(numPan)  # Initialize panel lengths
     phi = np.zeros(numPan)  # Initialize panel orientation angles
 
     # Find geometric quantities of the airfoil
-    for i in range(numPan):  # Loop over all panels
-        x_control[i] = 0.5 * (x[i] + x[i + 1])  # X control point coordinate
-        y_control[i] = 0.5 * (y[i] + y[i + 1])  # Y control point coordinate
+    for i in range(int(numPan/2)):  # Loop over all panels
+
+        # Panel midpoint coordinates for upper and lower surface
+        x_control_lo[i] = 0.5 * (x[i] + x[i + 1])
+        z_control_lo[i] = 0.5 * (z[i] + z[i + 1])
+        x_control_up[i] = 0.5 * (x[-i-1] + x[-i-2])
+        z_control_up[i] = 0.5 * (z[-i-1] + z[-i-2])
+
+        # Panel 75% chord coordinates for upper and lower surface
+        # x_control_lo[i] = 0.5 * (x_half_lo + x[i])
+        # z_control_lo[i] = 0.5 * (z_half_lo + z[i])
+        # x_control_up[i] = 0.5 * (x_half_up + x[-i-1])
+        # z_control_up[i] = 0.5 * (z_half_up + z[-i-1])
+
+    for i in range(numPan):
         dx = x[i + 1] - x[i]  # Panel X length
-        dy = y[i + 1] - y[i]  # Panel Y length
-        S[i] = (dx ** 2 + dy ** 2) ** 0.5  # Panel length
+        dz = z[i + 1] - z[i]  # Panel Z length
+        S[i] = (dx * dx + dz * dz) ** 0.5  # Panel length
+        phi[i] = np.arctan2(dz, dx)
 
-        phi[i] = m.atan2(dy, dx)  # Panel orientation angle [rad]
-        if (phi[i] < 0):  # If panel orientation is negative
-            phi[i] = phi[i] + 2 * np.pi  # Add 2pi to the panel angle
+        if phi[i] < 0:
+            phi[i] = phi[i] + 2*np.pi
 
+    x_control = np.append(x_control_lo,np.flip(x_control_up))
+    z_control = np.append(z_control_lo,np.flip(z_control_up))
     # Compute angle of panel normal w.r.t. horizontal and include AoA
-    delta = phi + (np.pi / 2)  # Compute panel normal angle [rad]
-    beta = delta - (AoA * (np.pi / 180))  # Angle between freestream and panel normal [rad]
-
-    # %% PLOTTING
-    # Plot the paneled geometry
-    # fig = plt.figure(1)  # Create figure
-    # plt.cla()  # Get ready for plotting
-    # plt.fill(x, y, 'k')  # Plot polygon (circle or airfoil)
-    X = np.zeros(2)  # Initialize panel X variable
-    Y = np.zeros(2)  # Initialize panel Y variable
-    for i in range(numPan):  # Loop over all panels
-        X[0] = x_control[i]  # Panel starting X point
-        X[1] = x_control[i] + S[i] * np.cos(delta[i])  # Panel ending X point
-        Y[0] = y_control[i]  # Panel starting Y point
-        Y[1] = y_control[i] + S[i] * np.sin(delta[i])  # Panel ending Y point
-    #     if (i == 0):  # For first panel
-    #         plt.plot(X, Y, 'b-', label='First Panel')  # Plot the first panel normal vector
-    #     elif (i == 1):  # For second panel
-    #         plt.plot(X, Y, 'g-', label='Second Panel')  # Plot the second panel normal vector
-    #     else:  # For every other panel
-    #         plt.plot(X, Y, 'r-')  # Plot the panel normal vector
-    # plt.xlabel('X-Axis')  # Set X-label
-    # plt.ylabel('Y-Axis')  # Set Y-label
-    # plt.title('Panel Geometry')  # Set title
-    # plt.axis('equal')  # Set axes equal
-    # plt.legend()  # Plot legend
-    # plt.show()  # Display plot
-
-    return numPan, x, y, phi, S, x_control, y_control
+    # delta = phi + (np.pi / 2)  # Compute panel normal angle [rad]
+    # beta = delta - (AoA * (np.pi / 180))  # Angle between freestream and panel normal [rad]
+    z = np.round(z, 10)
+    return numPan, x, z, phi ,S, x_control, z_control
 
 # x,y = gen_airfoil('4412',100)
 # plt.plot(x,y)
