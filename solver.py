@@ -85,10 +85,19 @@ def rhs_vec(a, phi):
     return vec
 
 def solver(AN, AT, rhs, phi, alpha):
-    gammas = np.linalg.solve(AN,rhs)
+    gammas = np.linalg.solve(AN, rhs)
     Vt = np.cos(phi-alpha) + np.matmul(AT, gammas)[:-1]
     Cp = 1 - Vt**2
     return Cp, gammas
+
+
+def lift_calculator(Cp, x_control):
+    x, x = np.split(x_control,2)
+    cp_lo, cp_up = np.split(Cp,2)
+    dcp = cp_lo - cp_up
+    cl = np.trapz(dcp, x)
+
+    return cl
 
 # if __name__ == "__main__":
 
